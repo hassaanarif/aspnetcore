@@ -10,15 +10,17 @@ using Microsoft.AspNetCore.Http.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
-public class RequestDelegateGeneratorTestBase
+public class RequestDelegateGeneratorTestBase : LoggedTest
 {
     internal static (ImmutableArray<GeneratorRunResult>, Compilation) RunGenerator(string sources)
     {
@@ -36,6 +38,7 @@ public class RequestDelegateGeneratorTestBase
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var _);
         var diagnostics = updatedCompilation.GetDiagnostics();
+        var generatedCode = updatedCompilation.SyntaxTrees.Last();
         Assert.Empty(diagnostics.Where(d => d.Severity > DiagnosticSeverity.Warning));
         var runResult = driver.GetRunResult();
 
@@ -116,6 +119,19 @@ public class RequestDelegateGeneratorTestBase
         return endpoint;
     }
 
+    internal HttpContext CreateHttpContext()
+    {
+        var httpContext = new DefaultHttpContext();
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+        var outStream = new MemoryStream();
+        httpContext.Response.Body = outStream;
+
+        return httpContext;
+    }
     private static Compilation CreateCompilation(string sources)
     {
         var source = $$"""
@@ -135,6 +151,13 @@ public static class TestMapActions
     {
         {{sources}}
         return app;
+    }
+
+    public class Todo
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; } = "Todo";
+        public bool IsComplete { get; set; }
     }
 }
 """;

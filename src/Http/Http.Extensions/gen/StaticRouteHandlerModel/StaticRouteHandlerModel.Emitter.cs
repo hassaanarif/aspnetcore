@@ -18,12 +18,20 @@ internal static class StaticRouteHandlerModelEmitter
      * that do return a value, `System.Func<string, int, string>` will
      * be emitted to indicate a `string`return type.
      */
-    public static string EmitHandlerDelegateType(Endpoint endpoint)
+    public static string EmitHandlerDelegateType(this Endpoint endpoint)
     {
+        if (endpoint.Response.IsVoid)
+        {
+            return $"System.Action";
+        }
+        if (endpoint.Response.IsAwaitable)
+        {
+            return $"System.Func<{endpoint.Response.WrappedResponseType}>";
+        }
         return $"System.Func<{endpoint.Response.ResponseType}>";
     }
 
-    public static string EmitSourceKey(Endpoint endpoint)
+    public static string EmitSourceKey(this Endpoint endpoint)
     {
         return $@"(@""{endpoint.Location.Item1}"", {endpoint.Location.Item2})";
     }
@@ -34,15 +42,74 @@ internal static class StaticRouteHandlerModelEmitter
      * their validity (optionality), invoke the underlying handler with
      * the arguments bound from HTTP context, and write out the response.
      */
-    public static string EmitRequestHandler()
+    public static string EmitRequestHandler(this Endpoint endpoint)
     {
-        return """
-System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext)
-                {
-                        var result = handler();
-                        return httpContext.Response.WriteAsync(result);
-                }
-""";
+        var code = new IndentedStringBuilder();
+        code.AppendLine(endpoint.Response.IsAwaitable
+            ? "async System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext)"
+            : "System.Threading.Tasks.Task RequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext)");
+        code.IncrementIndent().IncrementIndent().IncrementIndent().IncrementIndent();
+        code.AppendLine("{");
+        code.IncrementIndent();
+
+        if (endpoint.Response.IsVoid)
+        {
+            code.AppendLine("handler();");
+            code.AppendLine("return Task.CompletedTask;");
+        }
+        else
+        {
+            code.AppendLine($"""httpContext.Response.ContentType ??= "{endpoint.Response.ContentType}";""");
+            if (endpoint.Response.IsAwaitable)
+            {
+                code.AppendLine("var result = await handler();");
+                code.AppendLine(endpoint.EmitResponseWritingCall());
+            }
+            else
+            {
+                code.AppendLine("var result = handler();");
+                code.AppendLine("return GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+            }
+        }
+        code.DecrementIndent();
+        code.AppendLine("}");
+        return code.ToString();
+    }
+
+    public static string EmitResponseWritingCall(this Endpoint endpoint)
+    {
+        var code = new IndentedStringBuilder();
+        if (endpoint.Response.IsAwaitable)
+        {
+            code.Append("await ");
+        }
+        else
+        {
+            code.Append("return ");
+        }
+
+        if (endpoint.Response.IsIResult)
+        {
+            code.Append("result.ExecuteAsync(httpContext);");
+        }
+        else if (endpoint.Response.ResponseType == "string")
+        {
+            code.Append("httpContext.Response.WriteAsync(result);");
+        }
+        else if (endpoint.Response.ResponseType == "object")
+        {
+            code.Append("GeneratedRouteBuilderExtensionsCore.ExecuteObjectResult(result, httpContext);");
+        }
+        else if (!endpoint.Response.IsVoid)
+        {
+            code.Append("httpContext.Response.WriteAsJsonAsync(result);");
+        }
+        else if (!endpoint.Response.IsAwaitable && endpoint.Response.IsVoid)
+        {
+            code.Append("Type.CompletedTask;");
+        }
+
+        return code.ToString();
     }
 
     /*
@@ -79,8 +146,18 @@ async System.Threading.Tasks.Task RequestHandlerFiltered(Microsoft.AspNetCore.Ht
      * return System.Threading.Tasks.ValueTask.FromResult<object?>(Results.Empty);
      * ```
      */
-    public static string EmitFilteredInvocation()
+    public static string EmitFilteredInvocation(this Endpoint endpoint)
     {
-        return "return System.Threading.Tasks.ValueTask.FromResult<object?>(handler());";
+        var code = new IndentedStringBuilder();
+        if (endpoint.Response.IsVoid)
+        {
+            code.AppendLine("handler();");
+            code.AppendLine("return System.Threading.Tasks.ValueTask.FromResult<object?>(Results.Empty);");
+        }
+        else
+        {
+            code.AppendLine("return System.Threading.Tasks.ValueTask.FromResult<object?>(handler());");
+        }
+        return code.ToString();
     }
 }

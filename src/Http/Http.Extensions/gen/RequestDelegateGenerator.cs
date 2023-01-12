@@ -40,20 +40,33 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             transform: (context, token) =>
             {
                 var operation = context.SemanticModel.GetOperation(context.Node, token) as IInvocationOperation;
-                return StaticRouteHandlerModelParser.GetEndpointFromOperation(operation);
+                var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
+                return StaticRouteHandlerModelParser
+                    .WithEndpoint(operation, wellKnownTypes, context.SemanticModel)
+                    .WithHttpMethod()
+                    .WithEndpointRoute()
+                    .WithEndpointResponse();
             })
-            .Where(endpoint => endpoint.Response.ResponseType == "string")
             .WithTrackingName("EndpointModel");
 
+        context.RegisterSourceOutput(endpoints, (context, endpoint) =>
+        {
+            var (filePath, _) = endpoint.Location;
+            foreach (var diagnostic in endpoint.Diagnostics)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(diagnostic, endpoint.Operation.Syntax.GetLocation(), filePath));
+            }
+        });
+
         var thunks = endpoints.Select((endpoint, _) => $$"""
-            [{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}}] = (
+        [{{endpoint.EmitSourceKey()}}] = (
            (del, builder) =>
             {
-                builder.Metadata.Add(new SourceKey{{StaticRouteHandlerModelEmitter.EmitSourceKey(endpoint)}});
+                builder.Metadata.Add(new SourceKey{{endpoint.EmitSourceKey()}});
             },
             (del, builder) =>
             {
-                var handler = ({{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}})del;
+                var handler = ({{endpoint.EmitHandlerDelegateType()}})del;
                 EndpointFilterDelegate? filteredInvocation = null;
 
                 if (builder.FilterFactories.Count > 0)
@@ -64,13 +77,13 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                         {
                             return System.Threading.Tasks.ValueTask.FromResult<object?>(Results.Empty);
                         }
-                        {{StaticRouteHandlerModelEmitter.EmitFilteredInvocation()}}
+                        {{endpoint.EmitFilteredInvocation()}}
                     },
                     builder,
                     handler.Method);
                 }
 
-                {{StaticRouteHandlerModelEmitter.EmitRequestHandler()}}
+                {{endpoint.EmitRequestHandler()}}
                 {{StaticRouteHandlerModelEmitter.EmitFilteredRequestHandler()}}
 
                 return filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
@@ -82,7 +95,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 internal static Microsoft.AspNetCore.Builder.RouteHandlerBuilder {{endpoint.HttpMethod}}(
         this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints,
         [System.Diagnostics.CodeAnalysis.StringSyntax("Route")] string pattern,
-        {{StaticRouteHandlerModelEmitter.EmitHandlerDelegateType(endpoint)}} handler,
+        {{endpoint.EmitHandlerDelegateType()}} handler,
         [System.Runtime.CompilerServices.CallerFilePath] string filePath = "",
         [System.Runtime.CompilerServices.CallerLineNumber]int lineNumber = 0)
     {

@@ -23,6 +23,7 @@
   
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>
