@@ -152,7 +152,9 @@ Microsoft.AspNetCore.Http.HttpResults.Utf8ContentHttpResult.ExecuteAsync(Microso
 Microsoft.AspNetCore.Http.HttpResults.Utf8ContentHttpResult.ResponseContent.get -> System.ReadOnlyMemory<byte>
 Microsoft.AspNetCore.Http.HttpResults.Utf8ContentHttpResult.StatusCode.get -> int?
 static Microsoft.AspNetCore.Http.Results.Accepted<TValue>(string? uri = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute<TValue>(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.BadRequest<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Conflict<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Content(string? content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue! contentType) -> Microsoft.AspNetCore.Http.IResult!
@@ -166,14 +168,19 @@ static Microsoft.AspNetCore.Http.Results.Created(string? uri, object? value) -> 
 static Microsoft.AspNetCore.Http.Results.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.CreatedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.CreatedAtRoute<TValue>(string? routeName = null, object? routeValues = null, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.CreatedAtRoute<TValue>(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.JsonSerializerOptions? options = null, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.NotFound<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Ok<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.RedirectToRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Text(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Text(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Text(System.ReadOnlySpan<byte> utf8Content, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.AcceptedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute!
+static Microsoft.AspNetCore.Http.TypedResults.AcceptedAtRoute<TValue>(TValue? value, string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues) -> Microsoft.AspNetCore.Http.HttpResults.AcceptedAtRoute<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Content(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Created() -> Microsoft.AspNetCore.Http.HttpResults.Created!
@@ -181,6 +188,9 @@ static Microsoft.AspNetCore.Http.TypedResults.Created(string? uri) -> Microsoft.
 static Microsoft.AspNetCore.Http.TypedResults.Created(System.Uri? uri) -> Microsoft.AspNetCore.Http.HttpResults.Created!
 static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(string? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Created<TValue>(System.Uri? uri, TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Created<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.CreatedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute!
+static Microsoft.AspNetCore.Http.TypedResults.CreatedAtRoute<TValue>(TValue? value, string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary! routeValues) -> Microsoft.AspNetCore.Http.HttpResults.CreatedAtRoute<TValue>!
+static Microsoft.AspNetCore.Http.TypedResults.RedirectToRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, bool permanent = false, bool preserveMethod = false, string? fragment = null) -> Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Text(string? content, string? contentType = null, System.Text.Encoding? contentEncoding = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Text(string? content, string? contentType, System.Text.Encoding? contentEncoding) -> Microsoft.AspNetCore.Http.HttpResults.ContentHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Text(System.ReadOnlySpan<byte> utf8Content, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.HttpResults.Utf8ContentHttpResult!
